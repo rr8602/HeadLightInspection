@@ -1,0 +1,12 @@
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\bin\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.deps.json
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\bin\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.dll
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\bin\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.pdb
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.csproj.AssemblyReference.cache
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.GeneratedMSBuildEditorConfig.editorconfig
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.AssemblyInfoInputs.cache
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.AssemblyInfo.cs
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.csproj.CoreCompileInputs.cache
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.dll
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\refint\HeadLightInspection.ImageProcessing.dll
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\HeadLightInspection.ImageProcessing.pdb
+E:\HeadLightInspection\src\HeadLightInspection.ImageProcessing\obj\x64\Debug\net9.0-windows\ref\HeadLightInspection.ImageProcessing.dll

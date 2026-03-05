@@ -1,0 +1,5 @@
+E:\HeadLightInspection\src\HeadLightInspection.Camera\obj\x64\Debug\net6.0-windows\HeadLightInspection.Camera.csproj.AssemblyReference.cache
+E:\HeadLightInspection\src\HeadLightInspection.Camera\obj\x64\Debug\net6.0-windows\HeadLightInspection.Camera.GeneratedMSBuildEditorConfig.editorconfig
+E:\HeadLightInspection\src\HeadLightInspection.Camera\obj\x64\Debug\net6.0-windows\HeadLightInspection.Camera.AssemblyInfoInputs.cache
+E:\HeadLightInspection\src\HeadLightInspection.Camera\obj\x64\Debug\net6.0-windows\HeadLightInspection.Camera.AssemblyInfo.cs
+E:\HeadLightInspection\src\HeadLightInspection.Camera\obj\x64\Debug\net6.0-windows\HeadLightInspection.Camera.csproj.CoreCompileInputs.cache
