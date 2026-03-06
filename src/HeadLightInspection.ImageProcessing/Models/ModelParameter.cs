@@ -26,6 +26,41 @@ namespace HeadLightInspection.ImageProcessing.Models
     }
 
     /// <summary>
+    /// 측정 램프 위치 (좌/우)
+    /// </summary>
+    public enum LampPosition
+    {
+        Left = 0,   // 좌측 램프
+        Right = 1   // 우측 램프
+    }
+
+    /// <summary>
+    /// 하향등 Cutoff 알고리즘 타입
+    /// </summary>
+    public enum CutoffAlgorithm
+    {
+        /// <summary>
+        /// Hot Point + 고정 오프셋 방식
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Cutoff Line 엣지 검출 → 교점 계산
+        /// </summary>
+        Edge = 1,
+
+        /// <summary>
+        /// 안개등용 - 1st Line에서 Hot Point X좌표의 Y값 계산
+        /// </summary>
+        Fog = 2,
+
+        /// <summary>
+        /// 복합 방식 - 자동 오프셋 계산 + Fog 방식
+        /// </summary>
+        Combined = 3
+    }
+
+    /// <summary>
     /// 차종별 모델 파라미터
     /// C++ tbl_Spec 테이블 및 stParam 구조체 참조
     /// </summary>
@@ -64,9 +99,24 @@ namespace HeadLightInspection.ImageProcessing.Models
         public int CutoffLineThreshold { get; set; } = 30;
 
         /// <summary>
-        /// Cutoff Line 알고리즘
+        /// Cutoff Line 커널 알고리즘
         /// </summary>
         public KernelType CutoffLineAlgorithm { get; set; } = KernelType.AVR5X5;
+
+        /// <summary>
+        /// 하향등 Cutoff 알고리즘 타입
+        /// </summary>
+        public CutoffAlgorithm CutoffAlgorithmType { get; set; } = CutoffAlgorithm.Edge;
+
+        /// <summary>
+        /// 검출 실패 시 이전값 사용 여부
+        /// </summary>
+        public bool UsePreviousValue { get; set; } = true;
+
+        /// <summary>
+        /// 이전값 사용 최대 프레임 수 (이 횟수 초과 시 0 반환)
+        /// </summary>
+        public int PreviousValueMaxCount { get; set; } = 10;
 
         // 오프셋 (좌/우 헤드램프별)
         /// <summary>
@@ -145,6 +195,9 @@ namespace HeadLightInspection.ImageProcessing.Models
                 CutoffLineFilterCount = 50,
                 CutoffLineThreshold = 30,
                 CutoffLineAlgorithm = KernelType.AVR5X5,
+                CutoffAlgorithmType = CutoffAlgorithm.Edge,
+                UsePreviousValue = true,
+                PreviousValueMaxCount = 10,
                 ExposureTime = 10.0,
                 HandlePosition = HandlePosition.Left,
                 RansacTryCount = 200,
@@ -166,6 +219,9 @@ namespace HeadLightInspection.ImageProcessing.Models
                 CutoffLineFilterCount = this.CutoffLineFilterCount,
                 CutoffLineThreshold = this.CutoffLineThreshold,
                 CutoffLineAlgorithm = this.CutoffLineAlgorithm,
+                CutoffAlgorithmType = this.CutoffAlgorithmType,
+                UsePreviousValue = this.UsePreviousValue,
+                PreviousValueMaxCount = this.PreviousValueMaxCount,
                 OffsetLeftX = this.OffsetLeftX,
                 OffsetLeftY = this.OffsetLeftY,
                 OffsetRightX = this.OffsetRightX,

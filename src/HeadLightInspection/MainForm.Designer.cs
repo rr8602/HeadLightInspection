@@ -44,6 +44,10 @@ namespace HeadLightInspection
             lblCandelaLabel = new Label();
             lblCandelaValue = new Label();
             grpBeamSelect = new GroupBox();
+            cmbCutoffAlgorithm = new ComboBox();
+            lblCutoffAlgorithm = new Label();
+            lblMeasurementPoint = new Label();
+            chkUsePreviousValue = new CheckBox();
             cmbBeamType = new ComboBox();
             lblBeamType = new Label();
             panelControls = new Panel();
@@ -371,14 +375,58 @@ namespace HeadLightInspection
             // 
             // grpBeamSelect
             // 
+            grpBeamSelect.Controls.Add(cmbCutoffAlgorithm);
+            grpBeamSelect.Controls.Add(lblCutoffAlgorithm);
+            grpBeamSelect.Controls.Add(lblMeasurementPoint);
+            grpBeamSelect.Controls.Add(chkUsePreviousValue);
             grpBeamSelect.Controls.Add(cmbBeamType);
             grpBeamSelect.Controls.Add(lblBeamType);
             grpBeamSelect.Location = new Point(5, 5);
             grpBeamSelect.Name = "grpBeamSelect";
-            grpBeamSelect.Size = new Size(150, 60);
+            grpBeamSelect.Size = new Size(150, 190);
             grpBeamSelect.TabIndex = 2;
             grpBeamSelect.TabStop = false;
-            grpBeamSelect.Text = "빔 타입";
+            grpBeamSelect.Text = "빔 타입 / 알고리즘";
+            // 
+            // cmbCutoffAlgorithm
+            // 
+            cmbCutoffAlgorithm.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbCutoffAlgorithm.Items.AddRange(new object[] { "None (오프셋)", "Edge (교점)", "Fog (안개등)", "Combined (복합)" });
+            cmbCutoffAlgorithm.Location = new Point(10, 75);
+            cmbCutoffAlgorithm.Name = "cmbCutoffAlgorithm";
+            cmbCutoffAlgorithm.Size = new Size(130, 23);
+            cmbCutoffAlgorithm.TabIndex = 3;
+            cmbCutoffAlgorithm.SelectedIndexChanged += cmbCutoffAlgorithm_SelectedIndexChanged;
+            // 
+            // lblCutoffAlgorithm
+            // 
+            lblCutoffAlgorithm.Location = new Point(10, 55);
+            lblCutoffAlgorithm.Name = "lblCutoffAlgorithm";
+            lblCutoffAlgorithm.Size = new Size(70, 20);
+            lblCutoffAlgorithm.TabIndex = 2;
+            lblCutoffAlgorithm.Text = "알고리즘:";
+            // 
+            // lblMeasurementPoint
+            // 
+            lblMeasurementPoint.Font = new Font("맑은 고딕", 9F, FontStyle.Bold);
+            lblMeasurementPoint.ForeColor = Color.Orange;
+            lblMeasurementPoint.Location = new Point(10, 130);
+            lblMeasurementPoint.Name = "lblMeasurementPoint";
+            lblMeasurementPoint.Size = new Size(130, 55);
+            lblMeasurementPoint.TabIndex = 5;
+            lblMeasurementPoint.Text = "측정점: ---";
+            // 
+            // chkUsePreviousValue
+            // 
+            chkUsePreviousValue.AutoSize = true;
+            chkUsePreviousValue.Checked = true;
+            chkUsePreviousValue.CheckState = CheckState.Checked;
+            chkUsePreviousValue.Location = new Point(10, 105);
+            chkUsePreviousValue.Name = "chkUsePreviousValue";
+            chkUsePreviousValue.Size = new Size(90, 19);
+            chkUsePreviousValue.TabIndex = 4;
+            chkUsePreviousValue.Text = "이전값 사용";
+            chkUsePreviousValue.CheckedChanged += chkUsePreviousValue_CheckedChanged;
             // 
             // cmbBeamType
             // 
@@ -780,6 +828,7 @@ namespace HeadLightInspection
             grpMeasureResult.ResumeLayout(false);
             grpJudgment.ResumeLayout(false);
             grpBeamSelect.ResumeLayout(false);
+            grpBeamSelect.PerformLayout();
             panelControls.ResumeLayout(false);
             grpDisplay.ResumeLayout(false);
             grpDisplay.PerformLayout();
@@ -834,6 +883,10 @@ namespace HeadLightInspection
         private System.Windows.Forms.GroupBox grpBeamSelect;
         private System.Windows.Forms.ComboBox cmbBeamType;
         private System.Windows.Forms.Label lblBeamType;
+        private System.Windows.Forms.Label lblCutoffAlgorithm;
+        private System.Windows.Forms.ComboBox cmbCutoffAlgorithm;
+        private System.Windows.Forms.CheckBox chkUsePreviousValue;
+        private System.Windows.Forms.Label lblMeasurementPoint;
 
         // 우측 패널 컨트롤
         private System.Windows.Forms.Panel panelControls;

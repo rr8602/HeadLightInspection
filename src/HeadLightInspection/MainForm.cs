@@ -46,6 +46,7 @@ namespace HeadLightInspection
             _aligner.SetAvgParameters(5, 30.0);
 
             cmbBeamType.SelectedIndex = 0;
+            cmbCutoffAlgorithm.SelectedIndex = 1; // 기본값: Edge
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -416,7 +417,19 @@ namespace HeadLightInspection
             _analyzer.SetImage(image);
             var beamType = cmbBeamType.SelectedIndex == 0 ? BeamType.LowBeam : BeamType.HighBeam;
 
-            _lastResult = _analyzer.Analyze(beamType);
+            // 빔 타입에 따라 다른 분석 메서드 사용
+            if (beamType == BeamType.LowBeam)
+            {
+                // 하향등: 알고리즘 선택 가능
+                var lampPosition = cmbHeadlampSide.SelectedIndex == 0 ? LampPosition.Left : LampPosition.Right;
+                var algorithm = GetSelectedCutoffAlgorithm();
+                _lastResult = _analyzer.AnalyzeLowBeam(lampPosition, algorithm);
+            }
+            else
+            {
+                // 상향등: Hot Point만 사용
+                _lastResult = _analyzer.AnalyzeHighBeam();
+            }
 
             Bitmap measurementOverlay;
             if (_lastResult.IsValid)
@@ -437,6 +450,12 @@ namespace HeadLightInspection
                     lblMeasureCrossPoint.Text = "Cross Point: ---";
                 }
 
+                // 측정점 라벨 업데이트 (알고리즘별)
+                var mp = _lastResult.MeasurementPoint;
+                string algoName = _lastResult.UsedAlgorithm.ToString();
+                string prevInfo = _lastResult.UsedPreviousValue ? " (이전값)" : "";
+                lblMeasurementPoint.Text = $"측정점: ({mp.X:F1}, {mp.Y:F1})\n[{algoName}]{prevInfo}";
+
                 // 판정 수행 및 표시
                 PerformJudgment(_lastResult, beamType);
             }
@@ -447,6 +466,7 @@ namespace HeadLightInspection
                 lblMeasureHotPoint.Text = "Hot Point: ---";
                 lblMeasureHotValue.Text = "Hot Value: ---";
                 lblMeasureCrossPoint.Text = "Cross Point: ---";
+                lblMeasurementPoint.Text = "측정점: ---";
             }
 
             // 측정 탭 PictureBox 업데이트
@@ -580,6 +600,24 @@ namespace HeadLightInspection
                     using (var brush = new SolidBrush(Color.Cyan))
                     {
                         g.DrawString($"({crossPt.X:F1}, {crossPt.Y:F1})", SystemFonts.DefaultFont, brush, cx + 10, cy - 15);
+                    }
+                }
+
+                // 최종 측정점 표시 (주황색 사각형)
+                if (result.MeasurementPoint.X > 0 && result.MeasurementPoint.Y > 0)
+                {
+                    int mx = (int)result.MeasurementPoint.X;
+                    int my = (int)result.MeasurementPoint.Y;
+                    using (var pen = new Pen(Color.Orange, 3))
+                    {
+                        g.DrawRectangle(pen, mx - 15, my - 15, 30, 30);
+                        g.DrawLine(pen, mx - 20, my, mx + 20, my);
+                        g.DrawLine(pen, mx, my - 20, mx, my + 20);
+                    }
+                    using (var brush = new SolidBrush(Color.Orange))
+                    {
+                        string label = result.UsedPreviousValue ? "측정점 (이전값)" : "측정점";
+                        g.DrawString(label, new Font("Arial", 9, FontStyle.Bold), brush, mx + 20, my - 25);
                     }
                 }
             }
@@ -857,6 +895,65 @@ namespace HeadLightInspection
         {
             // 빔 타입 변경 시 필터 리셋
             _analyzer?.ResetFilters();
+
+            // 하향등(Low Beam)일 때만 알고리즘 선택 활성화
+            bool isLowBeam = cmbBeamType.SelectedIndex == 0;
+            cmbCutoffAlgorithm.Enabled = isLowBeam;
+            lblCutoffAlgorithm.Enabled = isLowBeam;
+
+            // 이전값 사용은 하향등 + Edge 알고리즘일 때만 활성화
+            bool isEdge = cmbCutoffAlgorithm.SelectedIndex == 1;
+            chkUsePreviousValue.Enabled = isLowBeam && isEdge;
+            if (!isLowBeam || !isEdge)
+            {
+                chkUsePreviousValue.Checked = false;
+            }
+
+            // 상향등일 때는 라벨 업데이트
+            if (!isLowBeam)
+            {
+                lblMeasurementPoint.Text = "측정점: Hot Point";
+            }
+        }
+
+        private void cmbCutoffAlgorithm_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // 알고리즘 변경 시 필터 리셋
+            _analyzer?.ResetFilters();
+
+            // Edge 알고리즘일 때만 이전값 사용 체크박스 활성화
+            // (다른 알고리즘은 항상 값을 반환하므로 이전값 사용 불필요)
+            bool isEdge = cmbCutoffAlgorithm.SelectedIndex == 1; // Edge
+            chkUsePreviousValue.Enabled = isEdge;
+            if (!isEdge)
+            {
+                chkUsePreviousValue.Checked = false;
+            }
+        }
+
+        private void chkUsePreviousValue_CheckedChanged(object sender, EventArgs e)
+        {
+            // 이전값 사용 설정 변경 - ModelParameter에 반영
+            if (_currentModelParam != null)
+            {
+                _currentModelParam.UsePreviousValue = chkUsePreviousValue.Checked;
+                _analyzer?.ApplyModelParameter(_currentModelParam);
+            }
+        }
+
+        /// <summary>
+        /// 현재 선택된 Cutoff 알고리즘 가져오기
+        /// </summary>
+        private CutoffAlgorithm GetSelectedCutoffAlgorithm()
+        {
+            return cmbCutoffAlgorithm.SelectedIndex switch
+            {
+                0 => CutoffAlgorithm.None,
+                1 => CutoffAlgorithm.Edge,
+                2 => CutoffAlgorithm.Fog,
+                3 => CutoffAlgorithm.Combined,
+                _ => CutoffAlgorithm.Edge
+            };
         }
 
         private void UpdateUI()

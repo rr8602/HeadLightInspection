@@ -344,6 +344,12 @@ OpenCvSharp4를 사용한 헤드램프 분석 (C++ `CHeadlampPA` 기반):
        // 전체 분석 수행
        public AnalysisResult Analyze(BeamType beamType = BeamType.LowBeam);
 
+       // 하향등 전용 분석 (알고리즘 선택 가능)
+       public AnalysisResult AnalyzeLowBeam(LampPosition lampPosition, CutoffAlgorithm? algorithm = null);
+
+       // 상향등 분석 (Hot Point만 사용)
+       public AnalysisResult AnalyzeHighBeam();
+
        // 필터 파라미터 설정
        public void SetHotPointFilterParams(int windowLen, double threshold);
        public void SetCrossPointFilterParams(int windowLen, double threshold);
@@ -355,7 +361,37 @@ OpenCvSharp4를 사용한 헤드램프 분석 (C++ `CHeadlampPA` 기반):
    }
    ```
 
-3. **Moving Average 필터** (실시간 안정화)
+3. **Cutoff 알고리즘 (하향등 전용)** - C++ `nCutAlgorizm` 기반
+
+   | 알고리즘 | 설명 | 사용 상황 |
+   |---------|------|----------|
+   | **None** | Hot Point + 고정 오프셋 | 오프셋 알고 있을 때 |
+   | **Edge** | Cutoff Line 교점 + 오프셋 | 일반 하향등 (기본값) |
+   | **Fog** | 1st Line 위의 점 (Hot Point X좌표) | 안개등 (교점 없음) |
+   | **Combined** | 자동 오프셋 계산 + Fog 방식 | 오프셋 모를 때 |
+
+   ```csharp
+   // 알고리즘 enum (ModelParameter.cs)
+   public enum CutoffAlgorithm
+   {
+       None = 0,      // Hot Point + 고정 오프셋
+       Edge = 1,      // Cutoff Line 교점 + 오프셋
+       Fog = 2,       // 1st Line Y값 계산 (안개등용)
+       Combined = 3   // 자동 오프셋 + Fog 방식
+   }
+
+   // 사용 예시
+   var result = analyzer.AnalyzeLowBeam(LampPosition.Left, CutoffAlgorithm.Edge);
+   Point2f measurementPoint = result.MeasurementPoint;  // 최종 측정점
+   ```
+
+   **이전값 사용 (Edge 알고리즘만)**:
+   - Edge 알고리즘은 Cutoff Line 교점 검출에 실패할 수 있음
+   - 검출 실패 시 이전 프레임의 측정점을 사용 (`UsePreviousValue = true`)
+   - 최대 `PreviousValueMaxCount` 프레임까지 이전값 사용
+   - 다른 알고리즘(None, Fog, Combined)은 항상 값을 반환하므로 이전값 불필요
+
+4. **Moving Average 필터** (실시간 안정화)
    - C++ `GetAvgHotPos()`, `GetAvgCrossPoint()` 알고리즘 기반
    - Hot Point, Cross Point, Cutoff Line 각각에 적용
    - 급격한 변화(threshold 초과) 시 필터 리셋
@@ -398,7 +434,12 @@ OpenCvSharp4를 사용한 헤드램프 분석 (C++ `CHeadlampPA` 기반):
        public int HotPointThreshold { get; set; }      // 필터 임계값
        public KernelType HotPointAlgorithm { get; set; } // 알고리즘 (AVR5X5 등)
 
-       // 좌/우 헤드램프 오프셋
+       // 하향등 Cutoff 알고리즘 (C++ nCutAlgorizm)
+       public CutoffAlgorithm CutoffAlgorithmType { get; set; }  // None/Edge/Fog/Combined
+       public bool UsePreviousValue { get; set; }                 // 검출 실패 시 이전값 사용
+       public int PreviousValueMaxCount { get; set; }             // 이전값 최대 사용 횟수
+
+       // 좌/우 헤드램프 오프셋 (C++ nOFFSET_XL/YL, nOFFSET_XR/YR)
        public int OffsetLeftX { get; set; }
        public int OffsetLeftY { get; set; }
        public int OffsetRightX { get; set; }
@@ -838,13 +879,16 @@ OpenCvSharp4를 사용한 헤드램프 분석 (C++ `CHeadlampPA` 기반):
 1. ✅ **Hot Point** - 빨간 원으로 표시
 2. ✅ **Cutoff Lines** - 녹색/노란색/마젠타 선으로 표시
 3. ✅ **Cross Point** - 청록색 십자선으로 표시
-4. ✅ **합격/불합격 표시** - OK(녹색)/NG(빨간색) 대형 텍스트
-5. ✅ **수평/수직 편차** - 분 단위로 표시, 불합격 시 빨간색
-6. ✅ **광도(cd) 표시** - 측정된 광도값 표시
-7. ✅ **차종 선택** - ComboBox로 모델 선택
-8. ✅ **헤드램프 위치** - 좌측/우측 선택
-9. ✅ **기준점 십자선** - 흰색 십자선으로 캘리브레이션 Zero 포인트 표시
-10. ✅ **허용 범위 타원** - 녹색 타원으로 합격 범위 표시 (GetToleranceRadius 사용)
+4. ✅ **측정점 (Measurement Point)** - 주황색 사각형으로 최종 측정 기준점 표시
+5. ✅ **합격/불합격 표시** - OK(녹색)/NG(빨간색) 대형 텍스트
+6. ✅ **수평/수직 편차** - 분 단위로 표시, 불합격 시 빨간색
+7. ✅ **광도(cd) 표시** - 측정된 광도값 표시
+8. ✅ **차종 선택** - ComboBox로 모델 선택
+9. ✅ **헤드램프 위치** - 좌측/우측 선택
+10. ✅ **기준점 십자선** - 흰색 십자선으로 캘리브레이션 Zero 포인트 표시
+11. ✅ **허용 범위 타원** - 녹색 타원으로 합격 범위 표시 (GetToleranceRadius 사용)
+12. ✅ **알고리즘 선택** - ComboBox로 Cutoff 알고리즘 선택 (하향등만)
+13. ✅ **이전값 사용 체크박스** - Edge 알고리즘 선택 시에만 활성화
 
 **정대 모드 (구현 완료):**
 1. ✅ **좌측 램프 영역** - 녹색 사각형 (BoundingBox)

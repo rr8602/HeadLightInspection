@@ -16,6 +16,22 @@ namespace HeadLightInspection.ImageProcessing
         public int HotPointValue { get; set; }
         public List<LineSegment> CutoffLines { get; set; } = new();
         public List<Point2f> CrossPoints { get; set; } = new();
+
+        /// <summary>
+        /// 최종 측정 기준점 (오프셋 적용 후)
+        /// </summary>
+        public Point2f MeasurementPoint { get; set; }
+
+        /// <summary>
+        /// 사용된 알고리즘
+        /// </summary>
+        public CutoffAlgorithm UsedAlgorithm { get; set; }
+
+        /// <summary>
+        /// 이전값 사용 여부
+        /// </summary>
+        public bool UsedPreviousValue { get; set; }
+
         public bool IsValid { get; set; }
         public string Message { get; set; } = string.Empty;
     }
@@ -75,6 +91,18 @@ namespace HeadLightInspection.ImageProcessing
 
         // 현재 모델 파라미터
         private ModelParameter? _currentModelParameter;
+
+        // 이전값 저장 (검출 실패 시 사용)
+        private Point2f _previousMeasurementPoint;
+        private int _previousValueFailCount = 0;
+        private bool _hasPreviousValue = false;
+
+        // 자동 오프셋 (CUT_ALGO_COMB용)
+        private int _autoOffsetX = 0;
+        private int _autoOffsetY = 0;
+        private bool _autoOffsetCalculated = false;
+        private int _autoOffsetFrameCount = 0;
+        private const int AUTO_OFFSET_MIN_FRAMES = 5;
 
         public int ImageWidth => _currentImage?.Width ?? 0;
         public int ImageHeight => _currentImage?.Height ?? 0;
@@ -143,6 +171,16 @@ namespace HeadLightInspection.ImageProcessing
             _lineAvgSampleNum[1] = 0;
             _avgLines[0] = null;
             _avgLines[1] = null;
+
+            // 이전값 리셋
+            _hasPreviousValue = false;
+            _previousValueFailCount = 0;
+
+            // 자동 오프셋 리셋
+            _autoOffsetCalculated = false;
+            _autoOffsetFrameCount = 0;
+            _autoOffsetX = 0;
+            _autoOffsetY = 0;
         }
 
         /// <summary>
@@ -596,6 +634,325 @@ namespace HeadLightInspection.ImageProcessing
 
             return result;
         }
+
+        /// <summary>
+        /// 하향등 전용 분석 (알고리즘 선택 지원)
+        /// </summary>
+        /// <param name="lampPosition">좌/우 램프 위치</param>
+        /// <param name="algorithm">사용할 알고리즘 (null이면 모델 파라미터에서 가져옴)</param>
+        public AnalysisResult AnalyzeLowBeam(LampPosition lampPosition, CutoffAlgorithm? algorithm = null)
+        {
+            var result = new AnalysisResult();
+
+            if (_grayImage == null)
+            {
+                result.IsValid = false;
+                result.Message = "이미지가 설정되지 않았습니다.";
+                return result;
+            }
+
+            // 알고리즘 결정
+            CutoffAlgorithm algoToUse = algorithm ?? _currentModelParameter?.CutoffAlgorithmType ?? CutoffAlgorithm.Edge;
+            result.UsedAlgorithm = algoToUse;
+
+            try
+            {
+                // 1. Hot Point 검출 + 필터링
+                var (hotPos, hotVal) = FindHotPoint(margin: 10);
+                result.HotPoint = ApplyHotPointFilter(hotPos);
+                result.HotPointValue = hotVal;
+
+                // 2. Cutoff Line 검출 + 필터링
+                var rawLines = FindCutoffLines(tolerance: _currentModelParameter?.RansacTolerance ?? 3.0, maxLines: 2);
+                result.CutoffLines = new List<LineSegment>();
+                for (int i = 0; i < rawLines.Count && i < 2; i++)
+                {
+                    var filteredLine = ApplyLineFilter(rawLines[i], i);
+                    result.CutoffLines.Add(filteredLine);
+                }
+
+                // 3. Cross Point 검출
+                Point2f? crossPoint = null;
+                if (result.CutoffLines.Count >= 2)
+                {
+                    crossPoint = FindCrossPoint(result.CutoffLines[0], result.CutoffLines[1]);
+                    if (crossPoint.HasValue)
+                    {
+                        var filteredCrossPt = ApplyCrossPointFilter(crossPoint.Value);
+                        result.CrossPoints.Add(filteredCrossPt);
+                    }
+                }
+
+                // 4. 알고리즘별 측정점 계산
+                Point2f measurementPoint;
+                bool detected = false;
+
+                switch (algoToUse)
+                {
+                    case CutoffAlgorithm.None:
+                        (measurementPoint, detected) = CalculateAlgoNone(result.HotPoint, lampPosition);
+                        break;
+
+                    case CutoffAlgorithm.Edge:
+                        (measurementPoint, detected) = CalculateAlgoEdge(result.HotPoint, crossPoint, lampPosition);
+                        break;
+
+                    case CutoffAlgorithm.Fog:
+                        (measurementPoint, detected) = CalculateAlgoFog(result.HotPoint, result.CutoffLines, crossPoint, lampPosition);
+                        break;
+
+                    case CutoffAlgorithm.Combined:
+                        (measurementPoint, detected) = CalculateAlgoCombined(result.HotPoint, result.CutoffLines, crossPoint, lampPosition);
+                        break;
+
+                    default:
+                        (measurementPoint, detected) = CalculateAlgoNone(result.HotPoint, lampPosition);
+                        break;
+                }
+
+                // 5. 이전값 처리
+                if (!detected)
+                {
+                    measurementPoint = HandlePreviousValue(out bool usedPrevious);
+                    result.UsedPreviousValue = usedPrevious;
+                    detected = usedPrevious;
+                }
+                else
+                {
+                    // 성공 시 이전값 저장
+                    _previousMeasurementPoint = measurementPoint;
+                    _hasPreviousValue = true;
+                    _previousValueFailCount = 0;
+                    result.UsedPreviousValue = false;
+                }
+
+                result.MeasurementPoint = measurementPoint;
+                result.IsValid = detected;
+                result.Message = detected
+                    ? $"[{algoToUse}] 측정 완료" + (result.UsedPreviousValue ? " (이전값 사용)" : "")
+                    : "측정 실패";
+            }
+            catch (Exception ex)
+            {
+                result.IsValid = false;
+                result.Message = $"분석 오류: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 상향등 분석 (Hot Point만 사용)
+        /// </summary>
+        public AnalysisResult AnalyzeHighBeam()
+        {
+            var result = new AnalysisResult();
+
+            if (_grayImage == null)
+            {
+                result.IsValid = false;
+                result.Message = "이미지가 설정되지 않았습니다.";
+                return result;
+            }
+
+            try
+            {
+                // Hot Point 검출 + 필터링
+                var (hotPos, hotVal) = FindHotPoint(margin: 10);
+                result.HotPoint = ApplyHotPointFilter(hotPos);
+                result.HotPointValue = hotVal;
+
+                // 상향등은 Hot Point가 곧 측정점
+                result.MeasurementPoint = new Point2f(result.HotPoint.X, result.HotPoint.Y);
+                result.IsValid = true;
+                result.Message = "상향등 측정 완료";
+            }
+            catch (Exception ex)
+            {
+                result.IsValid = false;
+                result.Message = $"분석 오류: {ex.Message}";
+            }
+
+            return result;
+        }
+
+        #region Cutoff Algorithms
+
+        /// <summary>
+        /// CUT_ALGO_NONE: Hot Point + 고정 오프셋
+        /// </summary>
+        private (Point2f point, bool detected) CalculateAlgoNone(OpenCvSharp.Point hotPoint, LampPosition lampPosition)
+        {
+            int offsetX, offsetY;
+            GetOffset(lampPosition, out offsetX, out offsetY);
+
+            var result = new Point2f(hotPoint.X + offsetX, hotPoint.Y + offsetY);
+            return (result, true);
+        }
+
+        /// <summary>
+        /// CUT_ALGO_EDGE: Cutoff Line 교점 + 오프셋
+        /// </summary>
+        private (Point2f point, bool detected) CalculateAlgoEdge(OpenCvSharp.Point hotPoint, Point2f? crossPoint, LampPosition lampPosition)
+        {
+            if (!crossPoint.HasValue)
+            {
+                // 교점 검출 실패 - 이전값 처리로 넘김
+                return (new Point2f(0, 0), false);
+            }
+
+            int offsetX, offsetY;
+            GetOffset(lampPosition, out offsetX, out offsetY);
+
+            var result = new Point2f(crossPoint.Value.X + offsetX, crossPoint.Value.Y + offsetY);
+            return (result, true);
+        }
+
+        /// <summary>
+        /// CUT_ALGO_FOG: 1st Line에서 Hot Point X좌표의 Y값 계산
+        /// </summary>
+        private (Point2f point, bool detected) CalculateAlgoFog(OpenCvSharp.Point hotPoint, List<LineSegment> lines, Point2f? crossPoint, LampPosition lampPosition)
+        {
+            if (lines.Count == 0)
+            {
+                // 라인 검출 실패
+                return (new Point2f(0, 0), false);
+            }
+
+            // 1st Line (첫 번째 검출된 라인)
+            var firstLine = lines[0];
+
+            // Hot Point X좌표에서 1st Line의 Y값 계산
+            // ax + by + c = 0 → y = -(ax + c) / b
+            float y;
+            if (Math.Abs(firstLine.B) > 0.0001)
+            {
+                y = (float)(-(firstLine.A * hotPoint.X + firstLine.C) / firstLine.B);
+            }
+            else
+            {
+                // 수직선인 경우 (드묾)
+                y = hotPoint.Y;
+            }
+
+            // 교점이 검출되었다면 교점의 Y값 사용
+            if (crossPoint.HasValue)
+            {
+                y = crossPoint.Value.Y;
+            }
+
+            int offsetX, offsetY;
+            GetOffset(lampPosition, out offsetX, out offsetY);
+
+            var result = new Point2f(hotPoint.X + offsetX, y + offsetY);
+            return (result, true);
+        }
+
+        /// <summary>
+        /// CUT_ALGO_COMB: 자동 오프셋 계산 + Fog 방식
+        /// </summary>
+        private (Point2f point, bool detected) CalculateAlgoCombined(OpenCvSharp.Point hotPoint, List<LineSegment> lines, Point2f? crossPoint, LampPosition lampPosition)
+        {
+            // 1단계: 자동 오프셋 계산 (초기 몇 프레임)
+            if (!_autoOffsetCalculated)
+            {
+                _autoOffsetFrameCount++;
+
+                if (crossPoint.HasValue && _autoOffsetFrameCount > AUTO_OFFSET_MIN_FRAMES)
+                {
+                    // Hot Point와 Cross Point의 차이로 오프셋 계산
+                    int calcOffsetX = (int)(crossPoint.Value.X - hotPoint.X);
+
+                    // 오프셋이 합리적인 범위 내인지 확인 (100 픽셀 이내)
+                    if (Math.Abs(calcOffsetX) < 100)
+                    {
+                        _autoOffsetX = calcOffsetX;
+                        _autoOffsetY = 0; // Y 오프셋은 0으로 (Fog 방식에서 Y는 라인에서 계산)
+                        _autoOffsetCalculated = true;
+                    }
+                    else
+                    {
+                        // 범위 초과 시 기본값
+                        _autoOffsetX = Math.Sign(calcOffsetX) * 50;
+                        _autoOffsetCalculated = true;
+                    }
+                }
+            }
+
+            // 2단계: Fog 방식으로 측정점 계산
+            if (lines.Count == 0)
+            {
+                return (new Point2f(0, 0), false);
+            }
+
+            var firstLine = lines[0];
+            float y;
+            if (Math.Abs(firstLine.B) > 0.0001)
+            {
+                y = (float)(-(firstLine.A * hotPoint.X + firstLine.C) / firstLine.B);
+            }
+            else
+            {
+                y = hotPoint.Y;
+            }
+
+            if (crossPoint.HasValue)
+            {
+                y = crossPoint.Value.Y;
+            }
+
+            // 자동 오프셋 적용 (기본 오프셋에 추가)
+            int offsetX, offsetY;
+            GetOffset(lampPosition, out offsetX, out offsetY);
+
+            var result = new Point2f(hotPoint.X + offsetX + _autoOffsetX, y + offsetY + _autoOffsetY);
+            return (result, true);
+        }
+
+        /// <summary>
+        /// 좌/우 램프별 오프셋 가져오기
+        /// </summary>
+        private void GetOffset(LampPosition lampPosition, out int offsetX, out int offsetY)
+        {
+            if (_currentModelParameter == null)
+            {
+                offsetX = 0;
+                offsetY = 0;
+                return;
+            }
+
+            if (lampPosition == LampPosition.Left)
+            {
+                offsetX = _currentModelParameter.OffsetLeftX;
+                offsetY = _currentModelParameter.OffsetLeftY;
+            }
+            else
+            {
+                offsetX = _currentModelParameter.OffsetRightX;
+                offsetY = _currentModelParameter.OffsetRightY;
+            }
+        }
+
+        /// <summary>
+        /// 이전값 처리
+        /// </summary>
+        private Point2f HandlePreviousValue(out bool usedPrevious)
+        {
+            bool usePrev = _currentModelParameter?.UsePreviousValue ?? true;
+            int maxCount = _currentModelParameter?.PreviousValueMaxCount ?? 10;
+
+            if (usePrev && _hasPreviousValue && _previousValueFailCount < maxCount)
+            {
+                _previousValueFailCount++;
+                usedPrevious = true;
+                return _previousMeasurementPoint;
+            }
+
+            usedPrevious = false;
+            return new Point2f(0, 0);
+        }
+
+        #endregion
 
         public void Dispose()
         {
