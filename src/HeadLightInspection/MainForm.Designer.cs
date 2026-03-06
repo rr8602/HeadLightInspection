@@ -17,31 +17,43 @@ namespace HeadLightInspection
 
         private void InitializeComponent()
         {
-            pictureBox = new PictureBox();
-            panelControls = new Panel();
+            tabMain = new TabControl();
+            tabAlignment = new TabPage();
+            picAlignment = new PictureBox();
+            panelAlignInfo = new Panel();
+            grpAlignResult = new GroupBox();
+            lblAlignStatus = new Label();
+            lblAlignLampCount = new Label();
+            lblAlignLeftLamp = new Label();
+            lblAlignRightLamp = new Label();
+            lblAlignBoundaryCenter = new Label();
+            lblAlignCentroid = new Label();
+            tabMeasurement = new TabPage();
+            picMeasurement = new PictureBox();
+            panelMeasureInfo = new Panel();
+            grpMeasureResult = new GroupBox();
+            lblMeasureHotPoint = new Label();
+            lblMeasureHotValue = new Label();
+            lblMeasureCrossPoint = new Label();
             grpJudgment = new GroupBox();
             lblJudgmentResult = new Label();
-            lblCandelaValue = new Label();
-            lblCandelaLabel = new Label();
-            lblVerticalValue = new Label();
-            lblVerticalLabel = new Label();
-            lblHorizontalValue = new Label();
             lblHorizontalLabel = new Label();
-            grpMode = new GroupBox();
-            lblAlignStatus = new Label();
-            rbModeMeasurement = new RadioButton();
-            rbModeAlignment = new RadioButton();
+            lblHorizontalValue = new Label();
+            lblVerticalLabel = new Label();
+            lblVerticalValue = new Label();
+            lblCandelaLabel = new Label();
+            lblCandelaValue = new Label();
+            grpBeamSelect = new GroupBox();
+            cmbBeamType = new ComboBox();
+            lblBeamType = new Label();
+            panelControls = new Panel();
+            grpDisplay = new GroupBox();
+            chkShowOverlay = new CheckBox();
             grpModel = new GroupBox();
             cmbHeadlampSide = new ComboBox();
             lblSideLabel = new Label();
             cmbModel = new ComboBox();
             lblModelLabel = new Label();
-            grpAnalysis = new GroupBox();
-            lblAnalysisResult = new Label();
-            chkShowOverlay = new CheckBox();
-            cmbBeamType = new ComboBox();
-            lblBeamType = new Label();
-            btnAnalyze = new Button();
             grpStatus = new GroupBox();
             lblErrorCount = new Label();
             lblFrameCount = new Label();
@@ -66,13 +78,22 @@ namespace HeadLightInspection
             cmbCameras = new ComboBox();
             btnConnect = new Button();
             btnLoadParams = new Button();
+            btnCalibration = new Button();
             lblCameraLabel = new Label();
-            ((System.ComponentModel.ISupportInitialize)pictureBox).BeginInit();
-            panelControls.SuspendLayout();
+            tabMain.SuspendLayout();
+            tabAlignment.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)picAlignment).BeginInit();
+            panelAlignInfo.SuspendLayout();
+            grpAlignResult.SuspendLayout();
+            tabMeasurement.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)picMeasurement).BeginInit();
+            panelMeasureInfo.SuspendLayout();
+            grpMeasureResult.SuspendLayout();
             grpJudgment.SuspendLayout();
-            grpMode.SuspendLayout();
+            grpBeamSelect.SuspendLayout();
+            panelControls.SuspendLayout();
+            grpDisplay.SuspendLayout();
             grpModel.SuspendLayout();
-            grpAnalysis.SuspendLayout();
             grpStatus.SuspendLayout();
             grpAcquisition.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numBlacklevel).BeginInit();
@@ -82,24 +103,306 @@ namespace HeadLightInspection
             grpCamera.SuspendLayout();
             SuspendLayout();
             // 
-            // pictureBox
+            // tabMain
             // 
-            pictureBox.BackColor = Color.Black;
-            pictureBox.Dock = DockStyle.Fill;
-            pictureBox.Location = new Point(0, 0);
-            pictureBox.Name = "pictureBox";
-            pictureBox.Size = new Size(779, 950);
-            pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox.TabIndex = 0;
-            pictureBox.TabStop = false;
+            tabMain.Controls.Add(tabAlignment);
+            tabMain.Controls.Add(tabMeasurement);
+            tabMain.Dock = DockStyle.Fill;
+            tabMain.Location = new Point(0, 0);
+            tabMain.Name = "tabMain";
+            tabMain.SelectedIndex = 0;
+            tabMain.Size = new Size(779, 950);
+            tabMain.TabIndex = 0;
+            // 
+            // tabAlignment
+            // 
+            tabAlignment.Controls.Add(picAlignment);
+            tabAlignment.Controls.Add(panelAlignInfo);
+            tabAlignment.Location = new Point(4, 24);
+            tabAlignment.Name = "tabAlignment";
+            tabAlignment.Padding = new Padding(3);
+            tabAlignment.Size = new Size(771, 922);
+            tabAlignment.TabIndex = 0;
+            tabAlignment.Text = "정대 (Alignment)";
+            tabAlignment.UseVisualStyleBackColor = true;
+            // 
+            // picAlignment
+            // 
+            picAlignment.BackColor = Color.Black;
+            picAlignment.Dock = DockStyle.Fill;
+            picAlignment.Location = new Point(3, 3);
+            picAlignment.Name = "picAlignment";
+            picAlignment.Size = new Size(765, 766);
+            picAlignment.SizeMode = PictureBoxSizeMode.Zoom;
+            picAlignment.TabIndex = 0;
+            picAlignment.TabStop = false;
+            // 
+            // panelAlignInfo
+            // 
+            panelAlignInfo.Controls.Add(grpAlignResult);
+            panelAlignInfo.Dock = DockStyle.Bottom;
+            panelAlignInfo.Location = new Point(3, 769);
+            panelAlignInfo.Name = "panelAlignInfo";
+            panelAlignInfo.Size = new Size(765, 150);
+            panelAlignInfo.TabIndex = 1;
+            // 
+            // grpAlignResult
+            // 
+            grpAlignResult.Controls.Add(lblAlignStatus);
+            grpAlignResult.Controls.Add(lblAlignLampCount);
+            grpAlignResult.Controls.Add(lblAlignLeftLamp);
+            grpAlignResult.Controls.Add(lblAlignRightLamp);
+            grpAlignResult.Controls.Add(lblAlignBoundaryCenter);
+            grpAlignResult.Controls.Add(lblAlignCentroid);
+            grpAlignResult.Dock = DockStyle.Fill;
+            grpAlignResult.Location = new Point(0, 0);
+            grpAlignResult.Name = "grpAlignResult";
+            grpAlignResult.Padding = new Padding(10);
+            grpAlignResult.Size = new Size(765, 150);
+            grpAlignResult.TabIndex = 0;
+            grpAlignResult.TabStop = false;
+            grpAlignResult.Text = "정대 결과";
+            // 
+            // lblAlignStatus
+            // 
+            lblAlignStatus.Font = new Font("맑은 고딕", 11F, FontStyle.Bold);
+            lblAlignStatus.ForeColor = Color.Gray;
+            lblAlignStatus.Location = new Point(5, 22);
+            lblAlignStatus.Name = "lblAlignStatus";
+            lblAlignStatus.Size = new Size(200, 20);
+            lblAlignStatus.TabIndex = 0;
+            lblAlignStatus.Text = "상태: 대기";
+            // 
+            // lblAlignLampCount
+            // 
+            lblAlignLampCount.Location = new Point(270, 26);
+            lblAlignLampCount.Name = "lblAlignLampCount";
+            lblAlignLampCount.Size = new Size(120, 20);
+            lblAlignLampCount.TabIndex = 1;
+            lblAlignLampCount.Text = "램프: ---";
+            // 
+            // lblAlignLeftLamp
+            // 
+            lblAlignLeftLamp.ForeColor = Color.LimeGreen;
+            lblAlignLeftLamp.Location = new Point(5, 56);
+            lblAlignLeftLamp.Name = "lblAlignLeftLamp";
+            lblAlignLeftLamp.Size = new Size(250, 20);
+            lblAlignLeftLamp.TabIndex = 2;
+            lblAlignLeftLamp.Text = "좌측 램프 (L): ---";
+            // 
+            // lblAlignRightLamp
+            // 
+            lblAlignRightLamp.ForeColor = Color.Cyan;
+            lblAlignRightLamp.Location = new Point(270, 56);
+            lblAlignRightLamp.Name = "lblAlignRightLamp";
+            lblAlignRightLamp.Size = new Size(250, 20);
+            lblAlignRightLamp.TabIndex = 3;
+            lblAlignRightLamp.Text = "우측 램프 (R): ---";
+            // 
+            // lblAlignBoundaryCenter
+            // 
+            lblAlignBoundaryCenter.Font = new Font("맑은 고딕", 9F, FontStyle.Regular, GraphicsUnit.Point, 129);
+            lblAlignBoundaryCenter.ForeColor = Color.DarkKhaki;
+            lblAlignBoundaryCenter.Location = new Point(5, 86);
+            lblAlignBoundaryCenter.Name = "lblAlignBoundaryCenter";
+            lblAlignBoundaryCenter.Size = new Size(250, 20);
+            lblAlignBoundaryCenter.TabIndex = 4;
+            lblAlignBoundaryCenter.Text = "경계 중심 (Center): ---";
+            // 
+            // lblAlignCentroid
+            // 
+            lblAlignCentroid.ForeColor = Color.Magenta;
+            lblAlignCentroid.Location = new Point(270, 86);
+            lblAlignCentroid.Name = "lblAlignCentroid";
+            lblAlignCentroid.Size = new Size(250, 20);
+            lblAlignCentroid.TabIndex = 5;
+            lblAlignCentroid.Text = "무게 중심 (Centroid): ---";
+            // 
+            // tabMeasurement
+            // 
+            tabMeasurement.Controls.Add(picMeasurement);
+            tabMeasurement.Controls.Add(panelMeasureInfo);
+            tabMeasurement.Location = new Point(4, 24);
+            tabMeasurement.Name = "tabMeasurement";
+            tabMeasurement.Padding = new Padding(3);
+            tabMeasurement.Size = new Size(771, 922);
+            tabMeasurement.TabIndex = 1;
+            tabMeasurement.Text = "측정 (Measurement)";
+            tabMeasurement.UseVisualStyleBackColor = true;
+            // 
+            // picMeasurement
+            // 
+            picMeasurement.BackColor = Color.Black;
+            picMeasurement.Dock = DockStyle.Fill;
+            picMeasurement.Location = new Point(3, 3);
+            picMeasurement.Name = "picMeasurement";
+            picMeasurement.Size = new Size(765, 716);
+            picMeasurement.SizeMode = PictureBoxSizeMode.Zoom;
+            picMeasurement.TabIndex = 0;
+            picMeasurement.TabStop = false;
+            // 
+            // panelMeasureInfo
+            // 
+            panelMeasureInfo.Controls.Add(grpMeasureResult);
+            panelMeasureInfo.Controls.Add(grpJudgment);
+            panelMeasureInfo.Controls.Add(grpBeamSelect);
+            panelMeasureInfo.Dock = DockStyle.Bottom;
+            panelMeasureInfo.Location = new Point(3, 719);
+            panelMeasureInfo.Name = "panelMeasureInfo";
+            panelMeasureInfo.Size = new Size(765, 200);
+            panelMeasureInfo.TabIndex = 1;
+            // 
+            // grpMeasureResult
+            // 
+            grpMeasureResult.Controls.Add(lblMeasureHotPoint);
+            grpMeasureResult.Controls.Add(lblMeasureHotValue);
+            grpMeasureResult.Controls.Add(lblMeasureCrossPoint);
+            grpMeasureResult.Location = new Point(160, 5);
+            grpMeasureResult.Name = "grpMeasureResult";
+            grpMeasureResult.Size = new Size(300, 90);
+            grpMeasureResult.TabIndex = 0;
+            grpMeasureResult.TabStop = false;
+            grpMeasureResult.Text = "측정 결과";
+            // 
+            // lblMeasureHotPoint
+            // 
+            lblMeasureHotPoint.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
+            lblMeasureHotPoint.ForeColor = Color.Red;
+            lblMeasureHotPoint.Location = new Point(10, 22);
+            lblMeasureHotPoint.Name = "lblMeasureHotPoint";
+            lblMeasureHotPoint.Size = new Size(280, 18);
+            lblMeasureHotPoint.TabIndex = 0;
+            lblMeasureHotPoint.Text = "Hot Point: ---";
+            // 
+            // lblMeasureHotValue
+            // 
+            lblMeasureHotValue.Location = new Point(10, 44);
+            lblMeasureHotValue.Name = "lblMeasureHotValue";
+            lblMeasureHotValue.Size = new Size(280, 18);
+            lblMeasureHotValue.TabIndex = 1;
+            lblMeasureHotValue.Text = "Hot Value: ---";
+            // 
+            // lblMeasureCrossPoint
+            // 
+            lblMeasureCrossPoint.ForeColor = Color.Cyan;
+            lblMeasureCrossPoint.Location = new Point(10, 66);
+            lblMeasureCrossPoint.Name = "lblMeasureCrossPoint";
+            lblMeasureCrossPoint.Size = new Size(280, 18);
+            lblMeasureCrossPoint.TabIndex = 2;
+            lblMeasureCrossPoint.Text = "Cross Point: ---";
+            // 
+            // grpJudgment
+            // 
+            grpJudgment.Controls.Add(lblJudgmentResult);
+            grpJudgment.Controls.Add(lblHorizontalLabel);
+            grpJudgment.Controls.Add(lblHorizontalValue);
+            grpJudgment.Controls.Add(lblVerticalLabel);
+            grpJudgment.Controls.Add(lblVerticalValue);
+            grpJudgment.Controls.Add(lblCandelaLabel);
+            grpJudgment.Controls.Add(lblCandelaValue);
+            grpJudgment.Location = new Point(470, 5);
+            grpJudgment.Name = "grpJudgment";
+            grpJudgment.Size = new Size(300, 190);
+            grpJudgment.TabIndex = 1;
+            grpJudgment.TabStop = false;
+            grpJudgment.Text = "판정 결과";
+            // 
+            // lblJudgmentResult
+            // 
+            lblJudgmentResult.Font = new Font("맑은 고딕", 28F, FontStyle.Bold);
+            lblJudgmentResult.ForeColor = Color.Gray;
+            lblJudgmentResult.Location = new Point(10, 25);
+            lblJudgmentResult.Name = "lblJudgmentResult";
+            lblJudgmentResult.Size = new Size(280, 50);
+            lblJudgmentResult.TabIndex = 0;
+            lblJudgmentResult.Text = "---";
+            lblJudgmentResult.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // lblHorizontalLabel
+            // 
+            lblHorizontalLabel.Location = new Point(15, 85);
+            lblHorizontalLabel.Name = "lblHorizontalLabel";
+            lblHorizontalLabel.Size = new Size(70, 20);
+            lblHorizontalLabel.TabIndex = 1;
+            lblHorizontalLabel.Text = "수평 (LR):";
+            // 
+            // lblHorizontalValue
+            // 
+            lblHorizontalValue.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
+            lblHorizontalValue.Location = new Point(90, 85);
+            lblHorizontalValue.Name = "lblHorizontalValue";
+            lblHorizontalValue.Size = new Size(80, 20);
+            lblHorizontalValue.TabIndex = 2;
+            lblHorizontalValue.Text = "--- '";
+            // 
+            // lblVerticalLabel
+            // 
+            lblVerticalLabel.Location = new Point(15, 110);
+            lblVerticalLabel.Name = "lblVerticalLabel";
+            lblVerticalLabel.Size = new Size(70, 20);
+            lblVerticalLabel.TabIndex = 3;
+            lblVerticalLabel.Text = "수직 (UD):";
+            // 
+            // lblVerticalValue
+            // 
+            lblVerticalValue.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
+            lblVerticalValue.Location = new Point(90, 110);
+            lblVerticalValue.Name = "lblVerticalValue";
+            lblVerticalValue.Size = new Size(80, 20);
+            lblVerticalValue.TabIndex = 4;
+            lblVerticalValue.Text = "--- '";
+            // 
+            // lblCandelaLabel
+            // 
+            lblCandelaLabel.Location = new Point(15, 135);
+            lblCandelaLabel.Name = "lblCandelaLabel";
+            lblCandelaLabel.Size = new Size(70, 20);
+            lblCandelaLabel.TabIndex = 5;
+            lblCandelaLabel.Text = "광도 (CD):";
+            // 
+            // lblCandelaValue
+            // 
+            lblCandelaValue.Font = new Font("맑은 고딕", 10F, FontStyle.Bold);
+            lblCandelaValue.Location = new Point(90, 135);
+            lblCandelaValue.Name = "lblCandelaValue";
+            lblCandelaValue.Size = new Size(100, 20);
+            lblCandelaValue.TabIndex = 6;
+            lblCandelaValue.Text = "--- cd";
+            // 
+            // grpBeamSelect
+            // 
+            grpBeamSelect.Controls.Add(cmbBeamType);
+            grpBeamSelect.Controls.Add(lblBeamType);
+            grpBeamSelect.Location = new Point(5, 5);
+            grpBeamSelect.Name = "grpBeamSelect";
+            grpBeamSelect.Size = new Size(150, 60);
+            grpBeamSelect.TabIndex = 2;
+            grpBeamSelect.TabStop = false;
+            grpBeamSelect.Text = "빔 타입";
+            // 
+            // cmbBeamType
+            // 
+            cmbBeamType.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbBeamType.Items.AddRange(new object[] { "Low Beam", "High Beam" });
+            cmbBeamType.Location = new Point(50, 22);
+            cmbBeamType.Name = "cmbBeamType";
+            cmbBeamType.Size = new Size(90, 23);
+            cmbBeamType.TabIndex = 0;
+            cmbBeamType.SelectedIndexChanged += cmbBeamType_SelectedIndexChanged;
+            // 
+            // lblBeamType
+            // 
+            lblBeamType.Location = new Point(10, 25);
+            lblBeamType.Name = "lblBeamType";
+            lblBeamType.Size = new Size(35, 20);
+            lblBeamType.TabIndex = 1;
+            lblBeamType.Text = "타입:";
             // 
             // panelControls
             // 
             panelControls.AutoScroll = true;
-            panelControls.Controls.Add(grpJudgment);
-            panelControls.Controls.Add(grpMode);
+            panelControls.Controls.Add(grpDisplay);
             panelControls.Controls.Add(grpModel);
-            panelControls.Controls.Add(grpAnalysis);
             panelControls.Controls.Add(grpStatus);
             panelControls.Controls.Add(grpAcquisition);
             panelControls.Controls.Add(grpCamera);
@@ -110,135 +413,27 @@ namespace HeadLightInspection
             panelControls.Size = new Size(301, 950);
             panelControls.TabIndex = 1;
             // 
-            // grpJudgment
+            // grpDisplay
             // 
-            grpJudgment.Controls.Add(lblJudgmentResult);
-            grpJudgment.Controls.Add(lblCandelaValue);
-            grpJudgment.Controls.Add(lblCandelaLabel);
-            grpJudgment.Controls.Add(lblVerticalValue);
-            grpJudgment.Controls.Add(lblVerticalLabel);
-            grpJudgment.Controls.Add(lblHorizontalValue);
-            grpJudgment.Controls.Add(lblHorizontalLabel);
-            grpJudgment.Dock = DockStyle.Top;
-            grpJudgment.Location = new Point(10, 790);
-            grpJudgment.Name = "grpJudgment";
-            grpJudgment.Padding = new Padding(10);
-            grpJudgment.Size = new Size(281, 150);
-            grpJudgment.TabIndex = 5;
-            grpJudgment.TabStop = false;
-            grpJudgment.Text = "판정 결과";
+            grpDisplay.Controls.Add(chkShowOverlay);
+            grpDisplay.Dock = DockStyle.Top;
+            grpDisplay.Location = new Point(10, 650);
+            grpDisplay.Name = "grpDisplay";
+            grpDisplay.Size = new Size(281, 60);
+            grpDisplay.TabIndex = 0;
+            grpDisplay.TabStop = false;
+            grpDisplay.Text = "표시 옵션";
             // 
-            // lblJudgmentResult
+            // chkShowOverlay
             // 
-            lblJudgmentResult.Font = new Font("맑은 고딕", 24F, FontStyle.Bold);
-            lblJudgmentResult.ForeColor = Color.Gray;
-            lblJudgmentResult.Location = new Point(15, 25);
-            lblJudgmentResult.Name = "lblJudgmentResult";
-            lblJudgmentResult.Size = new Size(230, 45);
-            lblJudgmentResult.TabIndex = 0;
-            lblJudgmentResult.Text = "---";
-            lblJudgmentResult.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // lblCandelaValue
-            // 
-            lblCandelaValue.AutoSize = true;
-            lblCandelaValue.Location = new Point(100, 120);
-            lblCandelaValue.Name = "lblCandelaValue";
-            lblCandelaValue.Size = new Size(39, 15);
-            lblCandelaValue.TabIndex = 6;
-            lblCandelaValue.Text = "--- cd";
-            // 
-            // lblCandelaLabel
-            // 
-            lblCandelaLabel.AutoSize = true;
-            lblCandelaLabel.Location = new Point(15, 120);
-            lblCandelaLabel.Name = "lblCandelaLabel";
-            lblCandelaLabel.Size = new Size(34, 15);
-            lblCandelaLabel.TabIndex = 5;
-            lblCandelaLabel.Text = "광도:";
-            // 
-            // lblVerticalValue
-            // 
-            lblVerticalValue.AutoSize = true;
-            lblVerticalValue.Location = new Point(100, 95);
-            lblVerticalValue.Name = "lblVerticalValue";
-            lblVerticalValue.Size = new Size(29, 15);
-            lblVerticalValue.TabIndex = 4;
-            lblVerticalValue.Text = "--- '";
-            // 
-            // lblVerticalLabel
-            // 
-            lblVerticalLabel.AutoSize = true;
-            lblVerticalLabel.Location = new Point(15, 95);
-            lblVerticalLabel.Name = "lblVerticalLabel";
-            lblVerticalLabel.Size = new Size(62, 15);
-            lblVerticalLabel.TabIndex = 3;
-            lblVerticalLabel.Text = "수직 편차:";
-            // 
-            // lblHorizontalValue
-            // 
-            lblHorizontalValue.AutoSize = true;
-            lblHorizontalValue.Location = new Point(100, 75);
-            lblHorizontalValue.Name = "lblHorizontalValue";
-            lblHorizontalValue.Size = new Size(29, 15);
-            lblHorizontalValue.TabIndex = 2;
-            lblHorizontalValue.Text = "--- '";
-            // 
-            // lblHorizontalLabel
-            // 
-            lblHorizontalLabel.AutoSize = true;
-            lblHorizontalLabel.Location = new Point(15, 75);
-            lblHorizontalLabel.Name = "lblHorizontalLabel";
-            lblHorizontalLabel.Size = new Size(62, 15);
-            lblHorizontalLabel.TabIndex = 1;
-            lblHorizontalLabel.Text = "수평 편차:";
-            // 
-            // grpMode
-            // 
-            grpMode.Controls.Add(lblAlignStatus);
-            grpMode.Controls.Add(rbModeMeasurement);
-            grpMode.Controls.Add(rbModeAlignment);
-            grpMode.Dock = DockStyle.Top;
-            grpMode.Location = new Point(10, 690);
-            grpMode.Name = "grpMode";
-            grpMode.Padding = new Padding(10);
-            grpMode.Size = new Size(281, 100);
-            grpMode.TabIndex = 6;
-            grpMode.TabStop = false;
-            grpMode.Text = "검사 모드";
-            // 
-            // lblAlignStatus
-            // 
-            lblAlignStatus.AutoSize = true;
-            lblAlignStatus.Location = new Point(15, 55);
-            lblAlignStatus.Name = "lblAlignStatus";
-            lblAlignStatus.Size = new Size(90, 15);
-            lblAlignStatus.TabIndex = 2;
-            lblAlignStatus.Text = "정대 상태: 대기";
-            // 
-            // rbModeMeasurement
-            // 
-            rbModeMeasurement.AutoSize = true;
-            rbModeMeasurement.Location = new Point(120, 25);
-            rbModeMeasurement.Name = "rbModeMeasurement";
-            rbModeMeasurement.Size = new Size(76, 19);
-            rbModeMeasurement.TabIndex = 1;
-            rbModeMeasurement.Text = "측정 (PA)";
-            rbModeMeasurement.UseVisualStyleBackColor = true;
-            rbModeMeasurement.CheckedChanged += rbMode_CheckedChanged;
-            // 
-            // rbModeAlignment
-            // 
-            rbModeAlignment.AutoSize = true;
-            rbModeAlignment.Checked = true;
-            rbModeAlignment.Location = new Point(15, 25);
-            rbModeAlignment.Name = "rbModeAlignment";
-            rbModeAlignment.Size = new Size(75, 19);
-            rbModeAlignment.TabIndex = 0;
-            rbModeAlignment.TabStop = true;
-            rbModeAlignment.Text = "정대 (FC)";
-            rbModeAlignment.UseVisualStyleBackColor = true;
-            rbModeAlignment.CheckedChanged += rbMode_CheckedChanged;
+            chkShowOverlay.AutoSize = true;
+            chkShowOverlay.Checked = true;
+            chkShowOverlay.CheckState = CheckState.Checked;
+            chkShowOverlay.Location = new Point(15, 25);
+            chkShowOverlay.Name = "chkShowOverlay";
+            chkShowOverlay.Size = new Size(158, 19);
+            chkShowOverlay.TabIndex = 0;
+            chkShowOverlay.Text = "분석 결과 오버레이 표시";
             // 
             // grpModel
             // 
@@ -247,23 +442,21 @@ namespace HeadLightInspection
             grpModel.Controls.Add(cmbModel);
             grpModel.Controls.Add(lblModelLabel);
             grpModel.Dock = DockStyle.Top;
-            grpModel.Location = new Point(10, 600);
+            grpModel.Location = new Point(10, 560);
             grpModel.Name = "grpModel";
-            grpModel.Padding = new Padding(10);
             grpModel.Size = new Size(281, 90);
-            grpModel.TabIndex = 4;
+            grpModel.TabIndex = 1;
             grpModel.TabStop = false;
             grpModel.Text = "차종 선택";
             // 
             // cmbHeadlampSide
             // 
             cmbHeadlampSide.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbHeadlampSide.FormattingEnabled = true;
             cmbHeadlampSide.Items.AddRange(new object[] { "좌측 (Left)", "우측 (Right)" });
             cmbHeadlampSide.Location = new Point(60, 55);
             cmbHeadlampSide.Name = "cmbHeadlampSide";
             cmbHeadlampSide.Size = new Size(185, 23);
-            cmbHeadlampSide.TabIndex = 3;
+            cmbHeadlampSide.TabIndex = 0;
             // 
             // lblSideLabel
             // 
@@ -271,17 +464,16 @@ namespace HeadLightInspection
             lblSideLabel.Location = new Point(15, 58);
             lblSideLabel.Name = "lblSideLabel";
             lblSideLabel.Size = new Size(34, 15);
-            lblSideLabel.TabIndex = 2;
+            lblSideLabel.TabIndex = 1;
             lblSideLabel.Text = "위치:";
             // 
             // cmbModel
             // 
             cmbModel.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbModel.FormattingEnabled = true;
             cmbModel.Location = new Point(60, 25);
             cmbModel.Name = "cmbModel";
             cmbModel.Size = new Size(185, 23);
-            cmbModel.TabIndex = 1;
+            cmbModel.TabIndex = 2;
             cmbModel.SelectedIndexChanged += cmbModel_SelectedIndexChanged;
             // 
             // lblModelLabel
@@ -290,75 +482,8 @@ namespace HeadLightInspection
             lblModelLabel.Location = new Point(15, 28);
             lblModelLabel.Name = "lblModelLabel";
             lblModelLabel.Size = new Size(34, 15);
-            lblModelLabel.TabIndex = 0;
+            lblModelLabel.TabIndex = 3;
             lblModelLabel.Text = "차종:";
-            // 
-            // grpAnalysis
-            // 
-            grpAnalysis.Controls.Add(lblAnalysisResult);
-            grpAnalysis.Controls.Add(chkShowOverlay);
-            grpAnalysis.Controls.Add(cmbBeamType);
-            grpAnalysis.Controls.Add(lblBeamType);
-            grpAnalysis.Controls.Add(btnAnalyze);
-            grpAnalysis.Dock = DockStyle.Top;
-            grpAnalysis.Location = new Point(10, 460);
-            grpAnalysis.Name = "grpAnalysis";
-            grpAnalysis.Padding = new Padding(10);
-            grpAnalysis.Size = new Size(281, 140);
-            grpAnalysis.TabIndex = 3;
-            grpAnalysis.TabStop = false;
-            grpAnalysis.Text = "분석";
-            // 
-            // lblAnalysisResult
-            // 
-            lblAnalysisResult.AutoSize = true;
-            lblAnalysisResult.Location = new Point(15, 115);
-            lblAnalysisResult.Name = "lblAnalysisResult";
-            lblAnalysisResult.Size = new Size(0, 15);
-            lblAnalysisResult.TabIndex = 4;
-            // 
-            // chkShowOverlay
-            // 
-            chkShowOverlay.AutoSize = true;
-            chkShowOverlay.Checked = true;
-            chkShowOverlay.CheckState = CheckState.Checked;
-            chkShowOverlay.Location = new Point(15, 85);
-            chkShowOverlay.Name = "chkShowOverlay";
-            chkShowOverlay.Size = new Size(102, 19);
-            chkShowOverlay.TabIndex = 3;
-            chkShowOverlay.Text = "결과 오버레이";
-            chkShowOverlay.UseVisualStyleBackColor = true;
-            // 
-            // cmbBeamType
-            // 
-            cmbBeamType.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbBeamType.FormattingEnabled = true;
-            cmbBeamType.Items.AddRange(new object[] { "Low Beam", "High Beam" });
-            cmbBeamType.Location = new Point(80, 25);
-            cmbBeamType.Name = "cmbBeamType";
-            cmbBeamType.Size = new Size(100, 23);
-            cmbBeamType.TabIndex = 1;
-            cmbBeamType.SelectedIndexChanged += cmbBeamType_SelectedIndexChanged;
-            // 
-            // lblBeamType
-            // 
-            lblBeamType.AutoSize = true;
-            lblBeamType.Location = new Point(15, 28);
-            lblBeamType.Name = "lblBeamType";
-            lblBeamType.Size = new Size(50, 15);
-            lblBeamType.TabIndex = 0;
-            lblBeamType.Text = "빔 타입:";
-            // 
-            // btnAnalyze
-            // 
-            btnAnalyze.Enabled = false;
-            btnAnalyze.Location = new Point(15, 55);
-            btnAnalyze.Name = "btnAnalyze";
-            btnAnalyze.Size = new Size(230, 25);
-            btnAnalyze.TabIndex = 2;
-            btnAnalyze.Text = "분석";
-            btnAnalyze.UseVisualStyleBackColor = true;
-            btnAnalyze.Click += btnAnalyze_Click;
             // 
             // grpStatus
             // 
@@ -367,10 +492,9 @@ namespace HeadLightInspection
             grpStatus.Controls.Add(lblStatus);
             grpStatus.Controls.Add(lblStatusLabel);
             grpStatus.Dock = DockStyle.Top;
-            grpStatus.Location = new Point(10, 340);
+            grpStatus.Location = new Point(10, 460);
             grpStatus.Name = "grpStatus";
-            grpStatus.Padding = new Padding(10);
-            grpStatus.Size = new Size(281, 120);
+            grpStatus.Size = new Size(281, 100);
             grpStatus.TabIndex = 2;
             grpStatus.TabStop = false;
             grpStatus.Text = "상태";
@@ -378,10 +502,10 @@ namespace HeadLightInspection
             // lblErrorCount
             // 
             lblErrorCount.AutoSize = true;
-            lblErrorCount.Location = new Point(15, 80);
+            lblErrorCount.Location = new Point(15, 75);
             lblErrorCount.Name = "lblErrorCount";
             lblErrorCount.Size = new Size(45, 15);
-            lblErrorCount.TabIndex = 3;
+            lblErrorCount.TabIndex = 0;
             lblErrorCount.Text = "오류: 0";
             // 
             // lblFrameCount
@@ -390,7 +514,7 @@ namespace HeadLightInspection
             lblFrameCount.Location = new Point(15, 55);
             lblFrameCount.Name = "lblFrameCount";
             lblFrameCount.Size = new Size(57, 15);
-            lblFrameCount.TabIndex = 2;
+            lblFrameCount.TabIndex = 1;
             lblFrameCount.Text = "프레임: 0";
             // 
             // lblStatus
@@ -400,7 +524,7 @@ namespace HeadLightInspection
             lblStatus.Location = new Point(60, 30);
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(59, 15);
-            lblStatus.TabIndex = 1;
+            lblStatus.TabIndex = 2;
             lblStatus.Text = "연결 안됨";
             // 
             // lblStatusLabel
@@ -409,11 +533,11 @@ namespace HeadLightInspection
             lblStatusLabel.Location = new Point(15, 30);
             lblStatusLabel.Name = "lblStatusLabel";
             lblStatusLabel.Size = new Size(34, 15);
-            lblStatusLabel.TabIndex = 0;
+            lblStatusLabel.TabIndex = 3;
             lblStatusLabel.Text = "상태:";
             // 
             // grpAcquisition
-            //
+            // 
             grpAcquisition.Controls.Add(btnStartStop);
             grpAcquisition.Controls.Add(btnDarkMode);
             grpAcquisition.Controls.Add(chkAutoMode);
@@ -428,76 +552,72 @@ namespace HeadLightInspection
             grpAcquisition.Controls.Add(trkExposure);
             grpAcquisition.Controls.Add(lblExposureLabel);
             grpAcquisition.Dock = DockStyle.Top;
-            grpAcquisition.Location = new Point(10, 200);
+            grpAcquisition.Location = new Point(10, 210);
             grpAcquisition.Name = "grpAcquisition";
-            grpAcquisition.Padding = new Padding(10);
             grpAcquisition.Size = new Size(281, 250);
-            grpAcquisition.TabIndex = 1;
+            grpAcquisition.TabIndex = 3;
             grpAcquisition.TabStop = false;
             grpAcquisition.Text = "취득";
             // 
             // btnStartStop
-            //
+            // 
             btnStartStop.Enabled = false;
-            btnStartStop.Location = new Point(15, 200);
+            btnStartStop.Location = new Point(15, 185);
             btnStartStop.Name = "btnStartStop";
             btnStartStop.Size = new Size(110, 35);
-            btnStartStop.TabIndex = 3;
+            btnStartStop.TabIndex = 0;
             btnStartStop.Text = "시작";
-            btnStartStop.UseVisualStyleBackColor = true;
             btnStartStop.Click += btnStartStop_Click;
-            //
+            // 
             // btnDarkMode
-            //
+            // 
             btnDarkMode.Enabled = false;
-            btnDarkMode.Location = new Point(130, 200);
+            btnDarkMode.Location = new Point(130, 185);
             btnDarkMode.Name = "btnDarkMode";
             btnDarkMode.Size = new Size(115, 35);
-            btnDarkMode.TabIndex = 7;
+            btnDarkMode.TabIndex = 1;
             btnDarkMode.Text = "암흑 모드";
-            btnDarkMode.UseVisualStyleBackColor = true;
             btnDarkMode.Click += btnDarkMode_Click;
-            //
+            // 
             // chkAutoMode
-            //
+            // 
             chkAutoMode.AutoSize = true;
             chkAutoMode.Checked = true;
             chkAutoMode.CheckState = CheckState.Checked;
             chkAutoMode.Enabled = false;
-            chkAutoMode.Location = new Point(15, 152);
+            chkAutoMode.Location = new Point(15, 155);
             chkAutoMode.Name = "chkAutoMode";
             chkAutoMode.Size = new Size(170, 19);
-            chkAutoMode.TabIndex = 14;
+            chkAutoMode.TabIndex = 2;
             chkAutoMode.Text = "자동 노출/게인 (Auto AES)";
-            chkAutoMode.UseVisualStyleBackColor = true;
             chkAutoMode.CheckedChanged += chkAutoMode_CheckedChanged;
-            //
+            // 
             // lblBlacklevel
-            //
+            // 
             lblBlacklevel.AutoSize = true;
             lblBlacklevel.Location = new Point(145, 127);
             lblBlacklevel.Name = "lblBlacklevel";
-            lblBlacklevel.Size = new Size(13, 15);
-            lblBlacklevel.TabIndex = 13;
+            lblBlacklevel.Size = new Size(14, 15);
+            lblBlacklevel.TabIndex = 3;
             lblBlacklevel.Text = "0";
-            //
+            // 
             // numBlacklevel
-            //
+            // 
             numBlacklevel.Enabled = false;
             numBlacklevel.Location = new Point(60, 125);
             numBlacklevel.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
             numBlacklevel.Name = "numBlacklevel";
             numBlacklevel.Size = new Size(80, 23);
-            numBlacklevel.TabIndex = 12;
+            numBlacklevel.TabIndex = 4;
             numBlacklevel.ValueChanged += numBlacklevel_ValueChanged;
-            //
+            // 
             // lblBlacklevelLabel
-            //
+            // 
             lblBlacklevelLabel.AutoSize = true;
             lblBlacklevelLabel.Location = new Point(15, 127);
             lblBlacklevelLabel.Name = "lblBlacklevelLabel";
-            lblBlacklevelLabel.Size = new Size(42, 15);
-            lblBlacklevelLabel.TabIndex = 11;
+            lblBlacklevelLabel.Size = new Size(46, 15);
+            lblBlacklevelLabel.TabIndex = 5;
             lblBlacklevelLabel.Text = "흑레벨:";
             // 
             // lblGain
@@ -506,7 +626,7 @@ namespace HeadLightInspection
             lblGain.Location = new Point(145, 100);
             lblGain.Name = "lblGain";
             lblGain.Size = new Size(24, 15);
-            lblGain.TabIndex = 10;
+            lblGain.TabIndex = 6;
             lblGain.Text = "0%";
             // 
             // numGain
@@ -515,7 +635,7 @@ namespace HeadLightInspection
             numGain.Location = new Point(60, 98);
             numGain.Name = "numGain";
             numGain.Size = new Size(80, 23);
-            numGain.TabIndex = 9;
+            numGain.TabIndex = 7;
             numGain.ValueChanged += numGain_ValueChanged;
             // 
             // lblGainLabel
@@ -533,7 +653,7 @@ namespace HeadLightInspection
             lblExposure.Location = new Point(160, 80);
             lblExposure.Name = "lblExposure";
             lblExposure.Size = new Size(26, 15);
-            lblExposure.TabIndex = 2;
+            lblExposure.TabIndex = 9;
             lblExposure.Text = "0μs";
             // 
             // numExposure
@@ -543,7 +663,7 @@ namespace HeadLightInspection
             numExposure.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
             numExposure.Name = "numExposure";
             numExposure.Size = new Size(85, 23);
-            numExposure.TabIndex = 4;
+            numExposure.TabIndex = 10;
             numExposure.ValueChanged += numExposure_ValueChanged;
             // 
             // trkExposure
@@ -553,7 +673,7 @@ namespace HeadLightInspection
             trkExposure.Maximum = 100000;
             trkExposure.Name = "trkExposure";
             trkExposure.Size = new Size(140, 45);
-            trkExposure.TabIndex = 1;
+            trkExposure.TabIndex = 11;
             trkExposure.TickFrequency = 10000;
             trkExposure.Scroll += trkExposure_Scroll;
             // 
@@ -563,22 +683,11 @@ namespace HeadLightInspection
             lblExposureLabel.Location = new Point(15, 30);
             lblExposureLabel.Name = "lblExposureLabel";
             lblExposureLabel.Size = new Size(62, 15);
-            lblExposureLabel.TabIndex = 0;
+            lblExposureLabel.TabIndex = 12;
             lblExposureLabel.Text = "노출 시간:";
             // 
-            // btnCalibration
-            //
-            btnCalibration = new Button();
-            btnCalibration.Location = new Point(15, 155);
-            btnCalibration.Name = "btnCalibration";
-            btnCalibration.Size = new Size(242, 30);
-            btnCalibration.TabIndex = 5;
-            btnCalibration.Text = "교정";
-            btnCalibration.UseVisualStyleBackColor = true;
-            btnCalibration.Click += btnCalibration_Click;
-            // 
             // grpCamera
-            //
+            // 
             grpCamera.Controls.Add(btnRefresh);
             grpCamera.Controls.Add(cmbCameras);
             grpCamera.Controls.Add(btnConnect);
@@ -599,48 +708,53 @@ namespace HeadLightInspection
             btnRefresh.Location = new Point(200, 50);
             btnRefresh.Name = "btnRefresh";
             btnRefresh.Size = new Size(57, 23);
-            btnRefresh.TabIndex = 2;
+            btnRefresh.TabIndex = 0;
             btnRefresh.Text = "Refresh";
-            btnRefresh.UseVisualStyleBackColor = true;
             btnRefresh.Click += btnRefresh_Click;
             // 
             // cmbCameras
             // 
             cmbCameras.DropDownStyle = ComboBoxStyle.DropDownList;
-            cmbCameras.FormattingEnabled = true;
             cmbCameras.Location = new Point(15, 50);
             cmbCameras.Name = "cmbCameras";
             cmbCameras.Size = new Size(180, 23);
             cmbCameras.TabIndex = 1;
             // 
             // btnConnect
-            //
+            // 
             btnConnect.Location = new Point(15, 85);
             btnConnect.Name = "btnConnect";
             btnConnect.Size = new Size(242, 30);
-            btnConnect.TabIndex = 3;
+            btnConnect.TabIndex = 2;
             btnConnect.Text = "연결";
-            btnConnect.UseVisualStyleBackColor = true;
             btnConnect.Click += btnConnect_Click;
-            //
+            // 
             // btnLoadParams
-            //
+            // 
             btnLoadParams.Enabled = false;
             btnLoadParams.Location = new Point(15, 120);
             btnLoadParams.Name = "btnLoadParams";
             btnLoadParams.Size = new Size(242, 30);
-            btnLoadParams.TabIndex = 4;
+            btnLoadParams.TabIndex = 3;
             btnLoadParams.Text = "파라미터 파일 로드...";
-            btnLoadParams.UseVisualStyleBackColor = true;
             btnLoadParams.Click += btnLoadParams_Click;
-            //
+            // 
+            // btnCalibration
+            // 
+            btnCalibration.Location = new Point(15, 155);
+            btnCalibration.Name = "btnCalibration";
+            btnCalibration.Size = new Size(242, 30);
+            btnCalibration.TabIndex = 4;
+            btnCalibration.Text = "교정 설정 (Calibration)...";
+            btnCalibration.Click += btnCalibration_Click;
+            // 
             // lblCameraLabel
             // 
             lblCameraLabel.AutoSize = true;
             lblCameraLabel.Location = new Point(15, 30);
             lblCameraLabel.Name = "lblCameraLabel";
             lblCameraLabel.Size = new Size(46, 15);
-            lblCameraLabel.TabIndex = 0;
+            lblCameraLabel.TabIndex = 5;
             lblCameraLabel.Text = "카메라:";
             // 
             // MainForm
@@ -648,23 +762,29 @@ namespace HeadLightInspection
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1080, 950);
-            Controls.Add(pictureBox);
+            Controls.Add(tabMain);
             Controls.Add(panelControls);
-            MinimumSize = new Size(900, 700);
+            MinimumSize = new Size(1000, 800);
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "HeadLight Inspection - 카메라 테스트";
+            Text = "HeadLight Inspection";
             Load += MainForm_Load;
-            ((System.ComponentModel.ISupportInitialize)pictureBox).EndInit();
-            panelControls.ResumeLayout(false);
+            tabMain.ResumeLayout(false);
+            tabAlignment.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)picAlignment).EndInit();
+            panelAlignInfo.ResumeLayout(false);
+            grpAlignResult.ResumeLayout(false);
+            tabMeasurement.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)picMeasurement).EndInit();
+            panelMeasureInfo.ResumeLayout(false);
+            grpMeasureResult.ResumeLayout(false);
             grpJudgment.ResumeLayout(false);
-            grpJudgment.PerformLayout();
-            grpMode.ResumeLayout(false);
-            grpMode.PerformLayout();
+            grpBeamSelect.ResumeLayout(false);
+            panelControls.ResumeLayout(false);
+            grpDisplay.ResumeLayout(false);
+            grpDisplay.PerformLayout();
             grpModel.ResumeLayout(false);
             grpModel.PerformLayout();
-            grpAnalysis.ResumeLayout(false);
-            grpAnalysis.PerformLayout();
             grpStatus.ResumeLayout(false);
             grpStatus.PerformLayout();
             grpAcquisition.ResumeLayout(false);
@@ -680,44 +800,29 @@ namespace HeadLightInspection
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox;
-        private System.Windows.Forms.Panel panelControls;
-        private System.Windows.Forms.GroupBox grpCamera;
-        private System.Windows.Forms.Button btnRefresh;
-        private System.Windows.Forms.ComboBox cmbCameras;
-        private System.Windows.Forms.Button btnConnect;
-        private System.Windows.Forms.Button btnLoadParams;
-        private System.Windows.Forms.Label lblCameraLabel;
-        private System.Windows.Forms.GroupBox grpAcquisition;
-        private System.Windows.Forms.Button btnStartStop;
-        private System.Windows.Forms.Label lblExposure;
-        private System.Windows.Forms.TrackBar trkExposure;
-        private System.Windows.Forms.NumericUpDown numExposure;
-        private System.Windows.Forms.Label lblExposureLabel;
-        private System.Windows.Forms.Button btnDarkMode;
-        private System.Windows.Forms.Label lblGainLabel;
-        private System.Windows.Forms.NumericUpDown numGain;
-        private System.Windows.Forms.Label lblGain;
-        private System.Windows.Forms.Label lblBlacklevelLabel;
-        private System.Windows.Forms.NumericUpDown numBlacklevel;
-        private System.Windows.Forms.Label lblBlacklevel;
-        private System.Windows.Forms.CheckBox chkAutoMode;
-        private System.Windows.Forms.GroupBox grpStatus;
-        private System.Windows.Forms.Label lblErrorCount;
-        private System.Windows.Forms.Label lblFrameCount;
-        private System.Windows.Forms.Label lblStatus;
-        private System.Windows.Forms.Label lblStatusLabel;
-        private System.Windows.Forms.GroupBox grpAnalysis;
-        private System.Windows.Forms.Label lblAnalysisResult;
-        private System.Windows.Forms.CheckBox chkShowOverlay;
-        private System.Windows.Forms.ComboBox cmbBeamType;
-        private System.Windows.Forms.Label lblBeamType;
-        private System.Windows.Forms.Button btnAnalyze;
-        private System.Windows.Forms.GroupBox grpModel;
-        private System.Windows.Forms.ComboBox cmbModel;
-        private System.Windows.Forms.Label lblModelLabel;
-        private System.Windows.Forms.ComboBox cmbHeadlampSide;
-        private System.Windows.Forms.Label lblSideLabel;
+        // 메인 탭 컨트롤
+        private System.Windows.Forms.TabControl tabMain;
+        private System.Windows.Forms.TabPage tabAlignment;
+        private System.Windows.Forms.TabPage tabMeasurement;
+
+        // 정대 탭 컨트롤
+        private System.Windows.Forms.PictureBox picAlignment;
+        private System.Windows.Forms.Panel panelAlignInfo;
+        private System.Windows.Forms.GroupBox grpAlignResult;
+        private System.Windows.Forms.Label lblAlignLeftLamp;
+        private System.Windows.Forms.Label lblAlignRightLamp;
+        private System.Windows.Forms.Label lblAlignBoundaryCenter;
+        private System.Windows.Forms.Label lblAlignCentroid;
+        private System.Windows.Forms.Label lblAlignStatus;
+        private System.Windows.Forms.Label lblAlignLampCount;
+
+        // 측정 탭 컨트롤
+        private System.Windows.Forms.PictureBox picMeasurement;
+        private System.Windows.Forms.Panel panelMeasureInfo;
+        private System.Windows.Forms.GroupBox grpMeasureResult;
+        private System.Windows.Forms.Label lblMeasureHotPoint;
+        private System.Windows.Forms.Label lblMeasureHotValue;
+        private System.Windows.Forms.Label lblMeasureCrossPoint;
         private System.Windows.Forms.GroupBox grpJudgment;
         private System.Windows.Forms.Label lblJudgmentResult;
         private System.Windows.Forms.Label lblHorizontalLabel;
@@ -726,10 +831,44 @@ namespace HeadLightInspection
         private System.Windows.Forms.Label lblVerticalValue;
         private System.Windows.Forms.Label lblCandelaLabel;
         private System.Windows.Forms.Label lblCandelaValue;
-        private System.Windows.Forms.GroupBox grpMode;
-        private System.Windows.Forms.RadioButton rbModeAlignment;
-        private System.Windows.Forms.RadioButton rbModeMeasurement;
-        private System.Windows.Forms.Label lblAlignStatus;
+        private System.Windows.Forms.GroupBox grpBeamSelect;
+        private System.Windows.Forms.ComboBox cmbBeamType;
+        private System.Windows.Forms.Label lblBeamType;
+
+        // 우측 패널 컨트롤
+        private System.Windows.Forms.Panel panelControls;
+        private System.Windows.Forms.GroupBox grpCamera;
+        private System.Windows.Forms.Button btnRefresh;
+        private System.Windows.Forms.ComboBox cmbCameras;
+        private System.Windows.Forms.Button btnConnect;
+        private System.Windows.Forms.Button btnLoadParams;
         private System.Windows.Forms.Button btnCalibration;
+        private System.Windows.Forms.Label lblCameraLabel;
+        private System.Windows.Forms.GroupBox grpAcquisition;
+        private System.Windows.Forms.Button btnStartStop;
+        private System.Windows.Forms.Button btnDarkMode;
+        private System.Windows.Forms.CheckBox chkAutoMode;
+        private System.Windows.Forms.Label lblBlacklevel;
+        private System.Windows.Forms.NumericUpDown numBlacklevel;
+        private System.Windows.Forms.Label lblBlacklevelLabel;
+        private System.Windows.Forms.Label lblGain;
+        private System.Windows.Forms.NumericUpDown numGain;
+        private System.Windows.Forms.Label lblGainLabel;
+        private System.Windows.Forms.Label lblExposure;
+        private System.Windows.Forms.NumericUpDown numExposure;
+        private System.Windows.Forms.TrackBar trkExposure;
+        private System.Windows.Forms.Label lblExposureLabel;
+        private System.Windows.Forms.GroupBox grpStatus;
+        private System.Windows.Forms.Label lblErrorCount;
+        private System.Windows.Forms.Label lblFrameCount;
+        private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Label lblStatusLabel;
+        private System.Windows.Forms.GroupBox grpModel;
+        private System.Windows.Forms.ComboBox cmbHeadlampSide;
+        private System.Windows.Forms.Label lblSideLabel;
+        private System.Windows.Forms.ComboBox cmbModel;
+        private System.Windows.Forms.Label lblModelLabel;
+        private System.Windows.Forms.GroupBox grpDisplay;
+        private System.Windows.Forms.CheckBox chkShowOverlay;
     }
 }

@@ -14,7 +14,6 @@ namespace HeadLightInspection
     public partial class MainForm : Form
     {
         private IDSCamera? _camera;
-        private Bitmap? _currentImage;
         private Bitmap? _originalImage;
         private HeadlampAnalyzer? _analyzer;
         private HeadlampAligner? _aligner;
@@ -29,9 +28,7 @@ namespace HeadLightInspection
         private StandardData? _currentStandardData;
         private JudgmentResult? _lastJudgmentResult;
 
-        // 검사 모드
-        private bool _isAlignmentMode = true;
-        private bool _alignmentCompleted = false;
+        // 정대 상태
         private OpenCvSharp.Point2f _alignedCenter;
 
         public MainForm()
@@ -304,9 +301,9 @@ namespace HeadLightInspection
         private void Camera_ImageReceived(object? sender, Bitmap image)
         {
             // UI 스레드에서 PictureBox 업데이트
-            if (pictureBox.InvokeRequired)
+            if (picAlignment.InvokeRequired)
             {
-                pictureBox.Invoke(() => ProcessReceivedImage(image));
+                picAlignment.Invoke(() => ProcessReceivedImage(image));
             }
             else
             {
@@ -322,83 +319,155 @@ namespace HeadLightInspection
                 _originalImage = new Bitmap(image);
             }
 
-            _currentImage?.Dispose();
-
             // 실시간 분석 수행 (오버레이 체크 시)
             if (chkShowOverlay.Checked)
             {
                 try
                 {
-                    if (_isAlignmentMode && _aligner != null)
-                    {
-                        // 정대 모드
-                        _aligner.SetImage(image);
-                        _lastAlignmentResult = _aligner.SearchLampCenter(margin: 40);
+                    // 정대 분석 수행 (항상)
+                    ProcessAlignmentImage(image);
 
-                        if (_lastAlignmentResult.IsValid)
-                        {
-                            _currentImage = DrawAlignmentOverlay(image, _lastAlignmentResult);
-                            _alignedCenter = _lastAlignmentResult.BoundaryCenter;
-                            _alignmentCompleted = true;
-                            lblAlignStatus.Text = $"정대: ({_alignedCenter.X:F1}, {_alignedCenter.Y:F1}) - {_lastAlignmentResult.LampCount}개 램프";
-                            lblAnalysisResult.Text = _lastAlignmentResult.Message;
-                        }
-                        else
-                        {
-                            _currentImage = CopyBitmap(image);
-                            lblAlignStatus.Text = "정대 상태: 램프 없음";
-                            lblAnalysisResult.Text = _lastAlignmentResult?.Message ?? "";
-                        }
-                    }
-                    else if (_analyzer != null)
-                    {
-                        // 측정 모드
-                        _analyzer.SetImage(image);
-                        var beamType = BeamType.LowBeam;
-
-                        if (cmbBeamType.InvokeRequired)
-                        {
-                            cmbBeamType.Invoke(() => beamType = cmbBeamType.SelectedIndex == 0 ? BeamType.LowBeam : BeamType.HighBeam);
-                        }
-                        else
-                        {
-                            beamType = cmbBeamType.SelectedIndex == 0 ? BeamType.LowBeam : BeamType.HighBeam;
-                        }
-
-                        _lastResult = _analyzer.Analyze(beamType);
-
-                        if (_lastResult.IsValid)
-                        {
-                            _currentImage = DrawOverlayOnImage(image, _lastResult);
-
-                            // 결과 표시 업데이트
-                            lblAnalysisResult.Text = $"Hot: ({_lastResult.HotPoint.X}, {_lastResult.HotPoint.Y}) Val: {_lastResult.HotPointValue}";
-
-                            // 판정 수행 및 표시
-                            PerformJudgment(_lastResult, beamType);
-                        }
-                        else
-                        {
-                            _currentImage = CopyBitmap(image);
-                        }
-                    }
-                    else
-                    {
-                        _currentImage = CopyBitmap(image);
-                    }
+                    // 측정 분석 수행 (항상)
+                    ProcessMeasurementImage(image);
                 }
                 catch
                 {
-                    _currentImage = CopyBitmap(image);
+                    // 오류 시 원본 이미지 표시
+                    UpdateBothPictureBoxes(CopyBitmap(image));
                 }
             }
             else
             {
-                _currentImage = CopyBitmap(image);
+                // 오버레이 없이 원본 이미지만 표시
+                UpdateBothPictureBoxes(CopyBitmap(image));
             }
 
             image.Dispose();
-            pictureBox.Image = _currentImage;
+        }
+
+        /// <summary>
+        /// 정대 분석 및 정대 탭 업데이트
+        /// </summary>
+        private void ProcessAlignmentImage(Bitmap image)
+        {
+            if (_aligner == null) return;
+
+            _aligner.SetImage(image);
+            _lastAlignmentResult = _aligner.SearchLampCenter(margin: 40);
+
+            Bitmap alignmentOverlay;
+            if (_lastAlignmentResult.IsValid)
+            {
+                alignmentOverlay = DrawAlignmentOverlay(image, _lastAlignmentResult);
+                _alignedCenter = _lastAlignmentResult.BoundaryCenter;
+
+                // 정대 결과 라벨 업데이트
+                lblAlignStatus.Text = "상태: 정대 완료";
+                lblAlignStatus.ForeColor = Color.Green;
+                lblAlignLampCount.Text = $"램프: {_lastAlignmentResult.LampCount}개";
+
+                if (_lastAlignmentResult.LeftLampCenter.X > 0)
+                {
+                    lblAlignLeftLamp.Text = $"좌측 램프 (L): ({_lastAlignmentResult.LeftLampCenter.X:F0}, {_lastAlignmentResult.LeftLampCenter.Y:F0})";
+                }
+                else
+                {
+                    lblAlignLeftLamp.Text = "좌측 램프 (L): ---";
+                }
+
+                if (_lastAlignmentResult.RightLampCenter.X > 0)
+                {
+                    lblAlignRightLamp.Text = $"우측 램프 (R): ({_lastAlignmentResult.RightLampCenter.X:F0}, {_lastAlignmentResult.RightLampCenter.Y:F0})";
+                }
+                else
+                {
+                    lblAlignRightLamp.Text = "우측 램프 (R): ---";
+                }
+
+                lblAlignBoundaryCenter.Text = $"경계 중심 (Center): ({_lastAlignmentResult.BoundaryCenter.X:F1}, {_lastAlignmentResult.BoundaryCenter.Y:F1})";
+                lblAlignCentroid.Text = $"무게 중심 (Centroid): ({_lastAlignmentResult.Centroid.X:F1}, {_lastAlignmentResult.Centroid.Y:F1})";
+            }
+            else
+            {
+                alignmentOverlay = CopyBitmap(image);
+
+                lblAlignStatus.Text = "상태: 램프 없음";
+                lblAlignStatus.ForeColor = Color.Gray;
+                lblAlignLampCount.Text = "램프: 0개";
+                lblAlignLeftLamp.Text = "좌측 램프 (L): ---";
+                lblAlignRightLamp.Text = "우측 램프 (R): ---";
+                lblAlignBoundaryCenter.Text = "경계 중심 (Center): ---";
+                lblAlignCentroid.Text = "무게 중심 (Centroid): ---";
+            }
+
+            // 정대 탭 PictureBox 업데이트
+            var oldImage = picAlignment.Image;
+            picAlignment.Image = alignmentOverlay;
+            oldImage?.Dispose();
+        }
+
+        /// <summary>
+        /// 측정 분석 및 측정 탭 업데이트
+        /// </summary>
+        private void ProcessMeasurementImage(Bitmap image)
+        {
+            if (_analyzer == null) return;
+
+            _analyzer.SetImage(image);
+            var beamType = cmbBeamType.SelectedIndex == 0 ? BeamType.LowBeam : BeamType.HighBeam;
+
+            _lastResult = _analyzer.Analyze(beamType);
+
+            Bitmap measurementOverlay;
+            if (_lastResult.IsValid)
+            {
+                measurementOverlay = DrawMeasurementOverlay(image, _lastResult);
+
+                // 측정 결과 라벨 업데이트
+                lblMeasureHotPoint.Text = $"Hot Point: ({_lastResult.HotPoint.X}, {_lastResult.HotPoint.Y})";
+                lblMeasureHotValue.Text = $"Hot Value: {_lastResult.HotPointValue}";
+
+                if (_lastResult.CrossPoints.Count > 0)
+                {
+                    var cp = _lastResult.CrossPoints[0];
+                    lblMeasureCrossPoint.Text = $"Cross Point: ({cp.X:F1}, {cp.Y:F1})";
+                }
+                else
+                {
+                    lblMeasureCrossPoint.Text = "Cross Point: ---";
+                }
+
+                // 판정 수행 및 표시
+                PerformJudgment(_lastResult, beamType);
+            }
+            else
+            {
+                measurementOverlay = CopyBitmap(image);
+
+                lblMeasureHotPoint.Text = "Hot Point: ---";
+                lblMeasureHotValue.Text = "Hot Value: ---";
+                lblMeasureCrossPoint.Text = "Cross Point: ---";
+            }
+
+            // 측정 탭 PictureBox 업데이트
+            var oldImage = picMeasurement.Image;
+            picMeasurement.Image = measurementOverlay;
+            oldImage?.Dispose();
+        }
+
+        /// <summary>
+        /// 두 PictureBox에 동일한 이미지 표시 (오버레이 없을 때)
+        /// </summary>
+        private void UpdateBothPictureBoxes(Bitmap image)
+        {
+            var oldAlignImage = picAlignment.Image;
+            var oldMeasureImage = picMeasurement.Image;
+
+            picAlignment.Image = image;
+            picMeasurement.Image = new Bitmap(image);
+
+            oldAlignImage?.Dispose();
+            oldMeasureImage?.Dispose();
         }
 
         /// <summary>
@@ -406,7 +475,6 @@ namespace HeadLightInspection
         /// </summary>
         private Bitmap ConvertTo24bpp(Bitmap source)
         {
-            // 8bpp 인덱스 이미지를 24bpp RGB로 변환
             var result = new Bitmap(source.Width, source.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
             using (var g = Graphics.FromImage(result))
             {
@@ -428,11 +496,10 @@ namespace HeadLightInspection
         }
 
         /// <summary>
-        /// 이미지에 분석 결과 오버레이 (analyzer 사용 안 함)
+        /// 측정 결과 오버레이
         /// </summary>
-        private Bitmap DrawOverlayOnImage(Bitmap source, AnalysisResult result)
+        private Bitmap DrawMeasurementOverlay(Bitmap source, AnalysisResult result)
         {
-            // 8bpp 인덱스 이미지는 직접 Graphics로 그릴 수 없으므로 24bpp로 변환
             Bitmap overlay;
             if (source.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
             {
@@ -792,110 +859,10 @@ namespace HeadLightInspection
             _analyzer?.ResetFilters();
         }
 
-        private void rbMode_CheckedChanged(object sender, EventArgs e)
-        {
-            _isAlignmentMode = rbModeAlignment.Checked;
-
-            // 모드 변경 시 상태 업데이트
-            if (_isAlignmentMode)
-            {
-                lblAlignStatus.Text = "정대 상태: 대기";
-                _alignmentCompleted = false;
-                grpJudgment.Enabled = false;
-            }
-            else
-            {
-                grpJudgment.Enabled = true;
-                if (_alignmentCompleted)
-                {
-                    lblAlignStatus.Text = $"정대 완료: ({_alignedCenter.X:F1}, {_alignedCenter.Y:F1})";
-                }
-            }
-
-            // 필터 리셋
-            _analyzer?.ResetFilters();
-            _aligner?.SetAvgParameters(5, 30.0);
-        }
-
-        private void btnAnalyze_Click(object sender, EventArgs e)
-        {
-            if (_analyzer == null)
-            {
-                MessageBox.Show("분석기가 초기화되지 않았습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            // 이미지 복사본 생성 (스레드 안전)
-            Bitmap? imageCopy = null;
-            lock (_imageLock)
-            {
-                if (_originalImage == null)
-                {
-                    MessageBox.Show("분석할 이미지가 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-                imageCopy = new Bitmap(_originalImage);
-            }
-
-            try
-            {
-                // 분석기에 이미지 설정 (SetImage가 내부적으로 Mat 복사를 수행)
-                _analyzer.SetImage(imageCopy);
-
-                // SetImage 후 imageCopy는 더 이상 필요 없음
-                imageCopy.Dispose();
-                imageCopy = null;
-
-                // 빔 타입 선택
-                var beamType = cmbBeamType.SelectedIndex == 0 ? BeamType.LowBeam : BeamType.HighBeam;
-
-                // 분석 수행
-                _lastResult = _analyzer.Analyze(beamType);
-
-                if (_lastResult.IsValid)
-                {
-                    // 결과 표시
-                    lblAnalysisResult.Text = $"Hot: ({_lastResult.HotPoint.X}, {_lastResult.HotPoint.Y}) Val: {_lastResult.HotPointValue}";
-
-                    // 판정 수행 및 표시
-                    PerformJudgment(_lastResult, beamType);
-
-                    // 오버레이 표시 (DrawOverlayOnImage 사용 - GDI+로 직접 그리기)
-                    if (chkShowOverlay.Checked)
-                    {
-                        Bitmap? overlaySource = null;
-                        lock (_imageLock)
-                        {
-                            if (_originalImage != null)
-                                overlaySource = new Bitmap(_originalImage);
-                        }
-
-                        if (overlaySource != null)
-                        {
-                            _currentImage?.Dispose();
-                            _currentImage = DrawOverlayOnImage(overlaySource, _lastResult);
-                            overlaySource.Dispose();
-                            pictureBox.Image = _currentImage;
-                        }
-                    }
-                }
-                else
-                {
-                    lblAnalysisResult.Text = _lastResult.Message;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"분석 오류: {ex.Message}\n{ex.StackTrace}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                imageCopy?.Dispose();
-            }
-        }
-
         private void UpdateUI()
         {
             bool connected = _camera?.IsConnected ?? false;
             bool acquiring = _camera?.IsAcquiring ?? false;
-            bool hasImage = _originalImage != null;
 
             btnConnect.Text = connected ? "연결 해제" : "연결";
             btnStartStop.Text = acquiring ? "정지" : "시작";
@@ -909,13 +876,11 @@ namespace HeadLightInspection
             chkAutoMode.Enabled = connected && !acquiring;
             cmbCameras.Enabled = !connected;
             btnRefresh.Enabled = !connected;
-            btnAnalyze.Enabled = hasImage || connected;
         }
 
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
         {
             DisconnectCamera();
-            _currentImage?.Dispose();
             _originalImage?.Dispose();
             _analyzer?.Dispose();
             _aligner?.Dispose();
